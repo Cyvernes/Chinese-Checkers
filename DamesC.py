@@ -150,6 +150,7 @@ class ZonePlateau(Canvas):
         if self.__piece_courante != "" :
             ncasex,ncasey = self._canv2plat(event.x,event.y)
             etude_coup = self.coup_legal(self.__piece_courante.casex,self.__piece_courante.casey,ncasex,ncasey)
+            print(etude_coup)
             if ncasex == self.pospioninit[0] and ncasey == self.pospioninit[1]:
                 self.__piece_courante.deplacer(event.x,event.y) 
                 self.reset_working_data()
@@ -197,24 +198,27 @@ class ZonePlateau(Canvas):
     def coup_legal(self,a,b,c,d):
         if (0<= a <= 7) and (0<= b <= 7) and (0<= c <= 7) and (0<= d <= 7):
             if ((c-a)*(d-b) == 0) or ((d-b)/(c-a)==-1):
-                rep = (abs(a-c+b-d) <= 1)
-                for p in self.pn:
-                    if p.casex == c and p.casey ==d:
-                        return('ilegal')
-                    elif p.casex != a or p.casey != b :
-                        if p.casex == (a+c)/2 and p.casey == (b+d)/2:
-                            rep = True
-                        elif (p.casex- a)*(d-b) == (p.casey-b)*(c-a) and (p.casex -a)*(c-a) + (p.casey-b)*(d-b) >= 0 and (p.casex -c)*(a-c) + (p.casey-d)*(b-d) >= 0:
+                rep = (abs(a-c+b-d) <= 1) and (abs(a-c) +abs(b-d) <= 2)
+                if not rep:
+                    for p in self.pn:
+                        if p.casex == c and p.casey ==d:
                             return('ilegal')
-
-                for p in self.pb:
-                    if p.casex == c and p.casey ==d:
-                        return('ilegal')
-                    elif p.casex != a or p.casey !=b :
-                        if p.casex == (a+c)/2 and p.casey == (b+d)/2:
-                            rep = True
-                        elif (p.casex- a)*(d-b) == (p.casey-b)*(c-a) and (p.casex -a)*(c-a) + (p.casey-b)*(d-b) >= 0 and (p.casex -c)*(a-c) + (p.casey-d)*(b-d) >= 0:
+                        elif p.casex != a or p.casey != b :
+                            if p.casex == (a+c)/2 and p.casey == (b+d)/2:
+                                print(p)
+                                rep = True
+                            elif (p.casex- a)*(d-b) == (p.casey-b)*(c-a) and (p.casex -a)*(c-a) + (p.casey-b)*(d-b) >= 0 and (p.casex -c)*(a-c) + (p.casey-d)*(b-d) >= 0:
+                                return('ilegal')
+    
+                    for p in self.pb:
+                        if p.casex == c and p.casey ==d:
                             return('ilegal')
+                        elif p.casex != a or p.casey !=b :
+                            if p.casex == (a+c)/2 and p.casey == (b+d)/2:
+                                print(p)
+                                rep = True
+                            elif (p.casex- a)*(d-b) == (p.casey-b)*(c-a) and (p.casex -a)*(c-a) + (p.casey-b)*(d-b) >= 0 and (p.casex -c)*(a-c) + (p.casey-d)*(b-d) >= 0:
+                                return('ilegal')
                 if rep:
                     if (abs(a-c+b-d) <= 1) and abs(a-c) +abs(b-d) <= 2:
                         return("non saut")

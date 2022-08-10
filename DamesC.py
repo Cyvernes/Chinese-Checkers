@@ -118,7 +118,7 @@ class ZonePlateau(Canvas):
     def jouerIA(self):
         if self.joueurajouer:
             print("J:",self.coup_courant)
-            temp = self.ia.joueralphabeta(depth = 5)
+            temp = self.ia.joueralphabeta(depth = 3)
             print("IA:",temp[1])
             self.appliquer_coup(temp[0],temp[1])
             self.reset_working_data()
@@ -260,17 +260,15 @@ class IA():
             l =  a_voir.pop(0)
             pp =  l[-1]
             for (a,b) in self.directions_possibles:
-                ii = pp[0]
-                jj = pp[1]
+                ii = pp[0] + a
+                jj = pp[1] + b
                 saut = False
-                while True:#on se déplace dans la direction donnée par a,b et on cherche le premier pion
-                    ii += a
-                    jj += b
-                    if (0 <= ii <= 7) and (0<= jj <= 7) and self.pospions[ii,jj]:
+                while (0 <= ii <= 7) and (0<= jj <= 7):#on se déplace dans la direction donnée par a,b et on cherche le premier pion
+                    if  self.pospions[ii,jj]:
                         saut = True
                         break
-                    else:
-                        break
+                    ii += a
+                    jj += b
                 if saut:
                     arrivex = 2*ii - pp[0]
                     arrivey = 2*jj - pp[1]
@@ -282,6 +280,8 @@ class IA():
                             if self.pospions[ii,jj]:
                                 saut_legal = False
                                 break
+                            ii += a
+                            jj += b
                         if saut_legal:
                             ll = l.copy()
                             ll.append((arrivex,arrivey))
@@ -311,17 +311,15 @@ class IA():
             l =  a_voir.pop(0)
             pp =  l[-1]
             for (a,b) in self.directions_possibles:
-                ii = pp[0]
-                jj = pp[1]
+                ii = pp[0] + a
+                jj = pp[1] +b
                 saut = False
-                while True:#on se déplace dans la direction donnée par a,b et on cherche le premier pion
-                    ii += a
-                    jj += b
-                    if (0 <= ii <= 7) and (0<= jj <= 7) and pospions[ii,jj]:
+                while (0 <= ii <= 7) and (0<= jj <= 7):#on se déplace dans la direction donnée par a,b et on cherche le premier pion
+                    if pospions[ii,jj]:
                         saut = True
                         break
-                    else:
-                        break
+                    ii += a
+                    jj += b
                 if saut:
                     arrivex = 2*ii - pp[0]
                     arrivey = 2*jj - pp[1]
@@ -333,6 +331,8 @@ class IA():
                             if pospions[ii,jj]:
                                 saut_legal = False
                                 break
+                            ii += a
+                            jj += b
                         if saut_legal:
                             ll = l.copy()
                             ll.append((arrivex,arrivey))
@@ -357,17 +357,15 @@ class IA():
         while len(a_voir) != 0:
             pp =  a_voir.pop(0)
             for (a,b) in self.directions_possibles:
-                ii = pp[0]
-                jj = pp[1]
+                ii = pp[0] + a
+                jj = pp[1] + b 
                 saut = False
-                while True:#on se déplace dans la direction donnée par a,b et on cherche le premier pion
-                    ii += a
-                    jj += b
-                    if (0 <= ii <= 7) and (0<= jj <= 7) and pospions[ii,jj]:
+                while (0 <= ii <= 7) and (0<= jj <= 7):#on se déplace dans la direction donnée par a,b et on cherche le premier pion
+                    if pospions[ii,jj]:
                         saut = True
                         break
-                    else:
-                        break
+                    ii += a
+                    jj += b
                 if saut:
                     arrivex = 2*ii - pp[0]
                     arrivey = 2*jj - pp[1]
@@ -379,6 +377,8 @@ class IA():
                             if pospions[ii,jj]:
                                 saut_legal = False
                                 break
+                            ii += a
+                            jj += b
                         if saut_legal:
                             a_voir.append((arrivex,arrivey))
                             vus[arrivex,arrivey] = True
@@ -467,7 +467,7 @@ class IA():
         beta = 1e10
         v = beta
         coup_a_jouer = coups_possibles[0]
-        for coup in coups_possibles:
+        for iii,coup in enumerate(coups_possibles):
             self.changer(pn,coup[0],coup[-1])
             ab = self.alphabeta(depth-1,pb,pn,alpha,beta,"max")
             self.changer(pn,coup[-1],coup[0])

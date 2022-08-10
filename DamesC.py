@@ -2,6 +2,7 @@ from tkinter import *
 import numpy as np
 import random as random
 import tkinter.font as font
+import time
  
 
 class Pion:
@@ -118,8 +119,10 @@ class ZonePlateau(Canvas):
     def jouerIA(self):
         if self.joueurajouer:
             print("J:",self.coup_courant)
+            tic = time.time()
             temp = self.ia.joueralphabeta(depth = 3)
-            print("IA:",temp[1])
+            toc = time.time()
+            print("IA:",temp[1],'en ',toc-tic,'s')
             self.appliquer_coup(temp[0],temp[1])
             self.reset_working_data()
     
@@ -150,7 +153,6 @@ class ZonePlateau(Canvas):
         if self.__piece_courante != "" :
             ncasex,ncasey = self._canv2plat(event.x,event.y)
             etude_coup = self.coup_legal(self.__piece_courante.casex,self.__piece_courante.casey,ncasex,ncasey)
-            print(etude_coup)
             if ncasex == self.pospioninit[0] and ncasey == self.pospioninit[1]:
                 self.__piece_courante.deplacer(event.x,event.y) 
                 self.reset_working_data()
@@ -191,6 +193,7 @@ class ZonePlateau(Canvas):
                     if test == "non saut":
                         break
                 else:
+                    print('L\'IA a joué un coup jugé comme illégal pour faire le saut ',(a,b),(c,d))
                     break
                 
 
@@ -199,26 +202,23 @@ class ZonePlateau(Canvas):
         if (0<= a <= 7) and (0<= b <= 7) and (0<= c <= 7) and (0<= d <= 7):
             if ((c-a)*(d-b) == 0) or ((d-b)/(c-a)==-1):
                 rep = (abs(a-c+b-d) <= 1) and (abs(a-c) +abs(b-d) <= 2)
-                if not rep:
-                    for p in self.pn:
-                        if p.casex == c and p.casey ==d:
+                for p in self.pn:
+                    if p.casex == c and p.casey ==d:
+                        return('ilegal')
+                    elif p.casex != a or p.casey != b :
+                        if p.casex == (a+c)/2 and p.casey == (b+d)/2:
+                            rep = True
+                        elif (p.casex- a)*(d-b) == (p.casey-b)*(c-a) and (p.casex -a)*(c-a) + (p.casey-b)*(d-b) >= 0 and (p.casex -c)*(a-c) + (p.casey-d)*(b-d) >= 0:
                             return('ilegal')
-                        elif p.casex != a or p.casey != b :
-                            if p.casex == (a+c)/2 and p.casey == (b+d)/2:
-                                print(p)
-                                rep = True
-                            elif (p.casex- a)*(d-b) == (p.casey-b)*(c-a) and (p.casex -a)*(c-a) + (p.casey-b)*(d-b) >= 0 and (p.casex -c)*(a-c) + (p.casey-d)*(b-d) >= 0:
-                                return('ilegal')
-    
-                    for p in self.pb:
-                        if p.casex == c and p.casey ==d:
+
+                for p in self.pb:
+                    if p.casex == c and p.casey ==d:
+                        return('ilegal')
+                    elif p.casex != a or p.casey !=b :
+                        if p.casex == (a+c)/2 and p.casey == (b+d)/2:
+                            rep = True
+                        elif (p.casex- a)*(d-b) == (p.casey-b)*(c-a) and (p.casex -a)*(c-a) + (p.casey-b)*(d-b) >= 0 and (p.casex -c)*(a-c) + (p.casey-d)*(b-d) >= 0:
                             return('ilegal')
-                        elif p.casex != a or p.casey !=b :
-                            if p.casex == (a+c)/2 and p.casey == (b+d)/2:
-                                print(p)
-                                rep = True
-                            elif (p.casex- a)*(d-b) == (p.casey-b)*(c-a) and (p.casex -a)*(c-a) + (p.casey-b)*(d-b) >= 0 and (p.casex -c)*(a-c) + (p.casey-d)*(b-d) >= 0:
-                                return('ilegal')
                 if rep:
                     if (abs(a-c+b-d) <= 1) and abs(a-c) +abs(b-d) <= 2:
                         return("non saut")
@@ -280,7 +280,7 @@ class IA():
                         saut_legal = True
                         ii += a
                         jj += b
-                        while ii != arrivex and jj != arrivey:
+                        while ii != arrivex or jj != arrivey:
                             if self.pospions[ii,jj]:
                                 saut_legal = False
                                 break
@@ -301,26 +301,22 @@ class IA():
     
     def coups_possibles2(self,p,pospions):
         rep = []
-        pospions[p[0],p[1]] = False
-        nb_non_sauts = 0
-        for a,b in self.directions_possibles:
-            if (0 <= p[0] +a <= 7) and (0<= p[1] +b <= 7) and (not pospions[p[0] +a,p[1]+b]):
-                rep.append([(p[0],p[1]),(p[0]+a,p[1] +b)])
-                nb_non_sauts +=1
-        
+        pospions[p] = False
         #gestion des sauts
-        vus = [(p[0],p[1])]
-        a_voir = [[(p[0],p[1])]]
+        vus = [p]
+        a_voir = [[p]]
         while len(a_voir) != 0:
             l =  a_voir.pop(0)
             pp =  l[-1]
             for (a,b) in self.directions_possibles:
                 ii = pp[0] + a
-                jj = pp[1] +b
+                jj = pp[1] + b
                 saut = False
                 while (0 <= ii <= 7) and (0<= jj <= 7):#on se déplace dans la direction donnée par a,b et on cherche le premier pion
                     if pospions[ii,jj]:
                         saut = True
+                        sauti = ii
+                        sautj = jj
                         break
                     ii += a
                     jj += b
@@ -331,7 +327,7 @@ class IA():
                         saut_legal = True
                         ii += a
                         jj += b
-                        while ii != arrivex and jj != arrivey:
+                        while ii != arrivex or jj != arrivey:
                             if pospions[ii,jj]:
                                 saut_legal = False
                                 break
@@ -344,9 +340,11 @@ class IA():
                             vus.append((arrivex,arrivey))
                             rep.append((ll))
                     
-
-        _ = vus.pop(0)
-        pospions[p[0],p[1]] = True
+        for a,b in self.directions_possibles:
+            if (0 <= p[0] +a <= 7) and (0<= p[1] +b <= 7) and (not pospions[p[0] +a,p[1]+b]):
+                rep.append([(p),(p[0]+a,p[1] +b)])
+                
+        pospions[p] = True
         return(rep)
     
     def coups_possibles3(self,p,pospions):
@@ -377,7 +375,7 @@ class IA():
                         saut_legal = True
                         ii += a
                         jj += b
-                        while ii != arrivex and jj != arrivey:
+                        while ii != arrivex or jj != arrivey:
                             if pospions[ii,jj]:
                                 saut_legal = False
                                 break
@@ -387,7 +385,6 @@ class IA():
                             a_voir.append((arrivex,arrivey))
                             vus[arrivex,arrivey] = True
                             rep.append(((p[0],p[1]),(arrivex,arrivey)))
-        
         pospions[p[0],p[1]] = True
         for a,b in self.directions_possibles:
             arrivex = p[0] + a
@@ -467,6 +464,7 @@ class IA():
         coups_possibles = []
         for p in pn:#on joue les noirs
             coups_possibles += self.coups_possibles2(p,pospion)
+        #coups_possibles.sort(key = lambda x: sum(x[-1]) - sum(x[0]))
         alpha = -1e10
         beta = 1e10
         v = beta
@@ -485,9 +483,9 @@ class IA():
         for p in self.pions:
             if (p.casex,p.casey) == coup_a_jouer[0]:
                 return(p,coup_a_jouer)
-            
-        
     
+    
+
     def alphabeta(self,depth,pb,pn,alpha,beta,t):
         if self.evaluerpb(pb) ==20:
             return(1e10)
@@ -502,7 +500,8 @@ class IA():
             fils = []
             for p in pn:#les noirs jouent
                 fils += self.coups_possibles3(p,pospion)
-                
+
+            fils.sort(key = lambda x: sum(x[-1]) - sum(x[0]))
             for fil in fils:
                 self.changer(pn,fil[0],fil[-1])
                 v = min(v,self.alphabeta(depth-1,pb,pn,alpha,beta,"max"))
@@ -512,7 +511,7 @@ class IA():
                     return(v)
                 beta = min(beta,v)
         else:
-            v = -9999999999999
+            v = -1e10
             #récupération des fils
             pospion = self.pbpn2pospion(pb, pn)
             fils = []

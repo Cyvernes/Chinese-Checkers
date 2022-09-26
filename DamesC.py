@@ -464,12 +464,13 @@ class IA():
         coups_possibles = []
         for p in pn:#on joue les noirs
             coups_possibles += self.coups_possibles2(p,pospion)
-        #coups_possibles.sort(key = lambda x: sum(x[-1]) - sum(x[0]))
+        coups_possibles.sort(key = lambda x: sum(x[-1]) - sum(x[0]))
         alpha = -1e10
         beta = 1e10
         v = beta
         coup_a_jouer = coups_possibles[0]
         for iii,coup in enumerate(coups_possibles):
+            print(100*(iii+1)/len(coups_possibles),'%')
             self.changer(pn,coup[0],coup[-1])
             ab = self.alphabeta(depth-1,pb,pn,alpha,beta,"max")
             self.changer(pn,coup[-1],coup[0])
@@ -517,6 +518,7 @@ class IA():
             fils = []
             for p in pb:#leses blancs jouent
                 fils += self.coups_possibles3(p,pospion)
+            fils.sort(key = lambda x: sum(x[0]) - sum(x[-1]))
             for fil in fils:
                 self.changer(pb,fil[0],fil[-1])
                 v = max(v,self.alphabeta(depth-1,pb,pn,alpha,beta,"min"))
